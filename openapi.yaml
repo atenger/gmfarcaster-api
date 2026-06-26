@@ -3,13 +3,20 @@ info:
   title: Warpee Knowledge API
   version: "1.0.0"
   description: >
-    Pay-per-call knowledge retrieval over the GM Farcaster content library,
-    settled with x402 (HTTP 402 Payment Required) in USDC. Account-less: the
-    on-chain payment is the authorization. $0.005 USDC per /v1/query call.
+    Pay-per-call knowledge retrieval over the GM Farcaster content library.
+    Account-less: the on-chain payment is the authorization. $0.005 USDC per
+    /v1/query call. A single 402 advertises two payment rails — x402 (USDC on
+    Base) and MPP (USDC on Tempo) — and the caller pays with whichever it supports.
   x-x402:
     scheme: exact
     asset: USDC
     network: eip155:8453        # Base mainnet (testnet: eip155:84532)
+    price: "$0.005"
+  x-mpp:
+    protocol: mpp               # Machine Payments Protocol (https://mpp.dev)
+    method: tempo
+    asset: USDC
+    chainId: 4217               # Tempo mainnet (testnet Moderato: 42431)
     price: "$0.005"
 servers:
   - url: https://api.gmfarcaster.com
@@ -18,9 +25,11 @@ paths:
     post:
       summary: Ask a question over the GM Farcaster library
       description: >
-        Returns a source-grounded answer with citations. Requires an x402
-        payment: an unpaid request returns 402 with a PAYMENT-REQUIRED challenge;
-        retry with a signed payment header to receive 200.
+        Returns a source-grounded answer with citations. Requires payment: an
+        unpaid request returns 402 advertising both rails — an x402 challenge in
+        PAYMENT-REQUIRED and an MPP challenge in WWW-Authenticate: Payment. Retry
+        with a signed payment header (x402) or Authorization: Payment (MPP) to
+        receive 200.
       x-payment-info:
         scheme: exact
         asset: USDC
@@ -40,11 +49,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/QueryResponse"
         "402":
-          description: Payment required. Challenge in the PAYMENT-REQUIRED header (base64 JSON).
+          description: >
+            Payment required. The response advertises both rails; pay with either.
           headers:
             PAYMENT-REQUIRED:
               schema: { type: string }
-              description: Base64-encoded x402 PaymentRequired object.
+              description: Base64-encoded x402 PaymentRequired object (Base USDC).
+            WWW-Authenticate:
+              schema: { type: string }
+              description: 'MPP challenge: `Payment ...` (Tempo USDC).'
         "400":
           description: Missing/empty query, or query too long.
           content:

@@ -3,16 +3,22 @@
 A pay-per-call HTTP API over the **GM Farcaster** content library — hundreds of
 episodes of transcripts and metadata, returned as a citation-backed answer.
 
-Built on **[x402](https://x402.org)**: there are no accounts, API keys, or
-sign-ups. You pay a few tenths of a cent in USDC per call, and any agent that can
-sign a stablecoin transfer can call it on first contact.
+Account-less and pay-per-call: no API keys or sign-ups — the on-chain payment IS
+the authorization. The endpoint speaks **two payment protocols**, advertised
+together in a single `402`, so an agent pays with whichever it supports:
+
+- **[x402](https://x402.org)** — USDC on **Base**
+- **[MPP](https://mpp.dev)** (Machine Payments Protocol) — USDC on **Tempo**
+
+Details:
 
 - **Base URL:** `https://api.gmfarcaster.com`
 - **Endpoint:** `POST /v1/query`
-- **Price:** $0.005 USDC per call
-- **Network:** Base (USDC) · **Settlement:** x402 `exact` scheme (gasless for the caller)
+- **Price:** $0.005 USDC per call (either rail)
+- **Settlement:** x402 `exact` scheme (Base) or MPP `charge` (Tempo) — gasless/no
+  native-gas-token for the caller in both cases
 
-> Status: **live on Base mainnet** (real USDC).
+> Status: **live on mainnet** — x402 on Base and MPP on Tempo (real USDC).
 
 ---
 
@@ -63,6 +69,53 @@ for c in resp.json()["citations"]:
 The wallet needs **USDC on Base, but no ETH** — the `exact` scheme is gasless for
 the caller (EIP-3009 `transferWithAuthorization`).
 
+## Paying via MPP (Tempo)
+
+The same endpoint also accepts **[MPP](https://mpp.dev)** — Tempo's Machine
+Payments Protocol — settled in USDC on **Tempo**. An unpaid request advertises it
+in the `402` via a `WWW-Authenticate: Payment` header (alongside the x402
+challenge); pay with an MPP client and you get `200` plus a `Payment-Receipt`.
+
+MPP is **client-settles**: your wallet broadcasts the on-chain stablecoin transfer
+and pays the fee in stablecoin — Tempo has no native gas token, so you need USDC
+on Tempo but no separate gas asset.
+
+```bash
+pip install "pympp[tempo]"
+```
+
+```python
+import asyncio
+from mpp.client import Client
+from mpp.methods.tempo import tempo, TempoAccount, ChargeIntent
+
+RPC = "https://rpc.tempo.xyz"   # Tempo mainnet (testnet: https://rpc.moderato.tempo.xyz)
+CHAIN_ID = 4217                 # Tempo mainnet (testnet: 42431)
+
+async def main():
+    account = TempoAccount.from_key("0xYOUR_FUNDED_PRIVATE_KEY")  # holds USDC on Tempo
+    method = tempo(
+        account=account,
+        intents={"charge": ChargeIntent(chain_id=CHAIN_ID, rpc_url=RPC)},
+        chain_id=CHAIN_ID, rpc_url=RPC,
+    )
+    async with Client(methods=[method]) as client:  # auto-handles 402 -> pay -> retry
+        resp = await client.post(
+            "https://api.gmfarcaster.com/v1/query",
+            json={"query": "What have GM Farcaster hosts said about prediction markets?"},
+            timeout=300,
+        )
+    data = resp.json()
+    print(data["answer"])
+    for c in data.get("citations", []):
+        print(f"- {c['display_name']}: {c['url']}")
+
+asyncio.run(main())
+```
+
+See [`examples/mpp_buyer.py`](examples/mpp_buyer.py) for a runnable version. The
+response body (`answer` / `citations` / `usage`) is identical on both rails.
+
 ## Request
 
 `POST /v1/query` — `Content-Type: application/json`
@@ -99,7 +152,7 @@ the caller (EIP-3009 `transferWithAuthorization`).
 
 | Status | Meaning |
 |--------|---------|
-| `402` | Payment required — the challenge is in the `PAYMENT-REQUIRED` header (base64 JSON). |
+| `402` | Payment required — x402 challenge in the `PAYMENT-REQUIRED` header (base64 JSON) and an MPP challenge in `WWW-Authenticate: Payment`. Pay with whichever you support. |
 | `400` | Missing/empty `query`, or query too long. |
 | `500` | Internal error (generic; no internal detail is ever returned). |
 
@@ -114,8 +167,9 @@ the caller (EIP-3009 `transferWithAuthorization`).
 - Pricing may change; tiered pricing may be introduced. The challenge is always
   authoritative.
 
-See [`examples/buyer.py`](examples/buyer.py) for a runnable client and
-[`openapi.yaml`](openapi.yaml) for the machine-readable spec.
+See [`examples/buyer.py`](examples/buyer.py) (x402) and
+[`examples/mpp_buyer.py`](examples/mpp_buyer.py) (MPP/Tempo) for runnable clients,
+and [`openapi.yaml`](openapi.yaml) for the machine-readable spec.
 
 ## License
 
