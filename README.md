@@ -17,10 +17,10 @@
 
 ## Why Warpee?
 
-Warpee is the canonical knowledge API for the GM Farcaster ecosystem. Instead of
-searching hundreds of podcast episodes by hand, agents ask natural-language
-questions and get grounded answers with **timestamped citations** back to the
-source.
+[Warpee](https://farcaster.xyz/warpee.eth) is the canonical knowledge API for the
+**GM Farcaster Network**. Instead of searching hundreds of podcast episodes by
+hand, agents ask natural-language questions and get grounded answers with
+**timestamped citations** back to the source.
 
 Ideal for:
 
@@ -79,7 +79,11 @@ You don't pick a tool — you ask a question, and the agent chooses the right sk
 
 ## What's behind it
 
-Built on the GM Farcaster media archive:
+Powered by [**GM Farcaster**](https://gmfarcaster.com) — Farcaster's #1 news show,
+and the first and only media network born in the Farcaster ecosystem. News,
+interviews, and conversations from across the Farcaster ecosystem.
+
+The API is built on the full GM Farcaster media archive:
 
 - **Hundreds of episodes** of Farcaster news, interviews, and analysis
 - **Thousands of minutes** of searchable transcripts
