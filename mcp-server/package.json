@@ -32,7 +32,7 @@
   "homepage": "https://github.com/atenger/gmfarcaster-api",
   "repository": {
     "type": "git",
-    "url": "https://github.com/atenger/gmfarcaster-api.git",
+    "url": "git+https://github.com/atenger/gmfarcaster-api.git",
     "directory": "mcp-server"
   },
   "dependencies": {
