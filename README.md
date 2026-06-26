@@ -1,41 +1,79 @@
 # Warpee Knowledge API
 
-A pay-per-call HTTP API over the **GM Farcaster** content library — hundreds of
-episodes of transcripts and metadata, returned as a citation-backed answer.
+> Query the complete GM Farcaster knowledge base with a single paid HTTP request.
+> Get grounded, citation-backed answers from hundreds of podcast episodes,
+> transcripts, and ecosystem discussions — **no API key or account required.**
 
-Account-less and pay-per-call: no API keys or sign-ups — the on-chain payment IS
-the authorization. The endpoint speaks **two payment protocols**, advertised
-together in a single `402`, so an agent pays with whichever it supports:
+**The first pay-per-query knowledge API for the Farcaster ecosystem.**
 
-- **[x402](https://x402.org)** — USDC on **Base**
-- **[MPP](https://mpp.dev)** (Machine Payments Protocol) — USDC on **Tempo**
-
-Details:
-
-- **Base URL:** `https://api.gmfarcaster.com`
-- **Endpoint:** `POST /v1/query`
-- **Price:** $0.005 USDC per call (either rail)
-- **Settlement:** x402 `exact` scheme (Base) or MPP `charge` (Tempo) — gasless/no
-  native-gas-token for the caller in both cases
-
-> Status: **live on mainnet** — x402 on Base and MPP on Tempo (real USDC).
+| | |
+|---|---|
+| **Base URL** | `https://api.gmfarcaster.com` |
+| **Endpoint** | `POST /v1/query` |
+| **Price** | $0.005 USDC per call |
+| **Payment** | x402 (USDC on Base) or MPP (USDC on Tempo) — pay per request, no accounts |
 
 ---
 
-## How it works (x402 in three steps)
+## Why Warpee?
 
-1. `POST /v1/query` with your question. With no payment you get **HTTP 402** and a
-   `PAYMENT-REQUIRED` challenge (price, asset, network, pay-to address).
-2. Your x402 client signs a USDC transfer authorization and retries with a
-   payment header. **No gas needed** — settlement uses EIP-3009.
-3. A facilitator verifies and settles on-chain; you get **HTTP 200** with the
-   answer and citations.
+Warpee is the canonical knowledge API for the GM Farcaster ecosystem. Instead of
+searching hundreds of podcast episodes by hand, agents ask natural-language
+questions and get grounded answers with **timestamped citations** back to the
+source.
 
-An x402-aware HTTP client does steps 1–3 for you automatically (see below).
+Ideal for:
 
-## Quickstart (Python)
+- AI agents answering Farcaster questions
+- Research assistants
+- Developer tooling
+- Content discovery
+- Governance and protocol research
+- Ecosystem analytics
 
-> Requires `eth-account >= 0.13.5` (for `sign_typed_data`).
+## Ask it anything about the Farcaster ecosystem
+
+```text
+What have GM Farcaster hosts said about prediction markets?
+What were the biggest takeaways from FarCon?
+Which episodes discussed Clanker?
+How has sentiment toward mini apps evolved?
+When was the Clanker Ecosystem Fund (CEF) first announced?
+Summarize the interviews with Jesse Pollak.
+What did guests say about Base App?
+```
+
+Every answer comes back grounded in the source episodes, with timestamped links
+that jump straight to the moment in the show.
+
+## What's behind it
+
+Built on the GM Farcaster media archive:
+
+- **Hundreds of episodes** of Farcaster news, interviews, and analysis
+- **Thousands of minutes** of searchable transcripts
+- **Rich episode metadata** — dates, hosts, series
+- **Timestamped citations** back to the exact source
+
+## How it works
+
+```text
+   Agent
+     │   POST /v1/query   { "query": "..." }
+     ▼
+   402 Payment Required   ──►  pay with x402 (Base) or MPP (Tempo)
+     │   retry with payment
+     ▼
+   Warpee   ──►  retrieval over the GM Farcaster corpus
+     │
+     ▼
+   200 OK   ──►  { answer, citations[], usage }
+```
+
+One HTTP request in, a cited answer out. The payment handshake is automatic — an
+x402- or MPP-aware client does it for you (see Quick start).
+
+## Quick start (Python)
 
 ```bash
 pip install "x402>=2.13" "eth-account>=0.13.5" requests
@@ -48,11 +86,9 @@ from x402.mechanisms.evm.exact.client import ExactEvmScheme
 from x402.mechanisms.evm.signers import EthAccountSigner
 from x402.http.clients.requests import x402_requests
 
-NETWORK = "eip155:8453"  # Base mainnet (use eip155:84532 for Base Sepolia testnet)
-
-account = Account.from_key("0xYOUR_FUNDED_PRIVATE_KEY")  # holds USDC; keep it secret
+account = Account.from_key("0xYOUR_FUNDED_PRIVATE_KEY")  # holds USDC on Base; keep it secret
 client = x402ClientSync()
-client.register(NETWORK, ExactEvmScheme(EthAccountSigner(account)))
+client.register("eip155:8453", ExactEvmScheme(EthAccountSigner(account)))  # Base mainnet
 session = x402_requests(client)  # a requests.Session that auto-pays 402s
 
 resp = session.post(
@@ -60,25 +96,91 @@ resp = session.post(
     json={"query": "What have GM Farcaster hosts said about prediction markets?"},
     timeout=300,
 )
-print(resp.status_code)
 print(resp.json()["answer"])
 for c in resp.json()["citations"]:
     print(f"- {c['display_name']}: {c['url']}")
 ```
 
-The wallet needs **USDC on Base, but no ETH** — the `exact` scheme is gasless for
-the caller (EIP-3009 `transferWithAuthorization`).
+The wallet needs **USDC on Base, but no ETH** — settlement is gasless for the
+caller. Prefer to pay on **Tempo** instead? See [Payment protocols](#payment-protocols-the-handshake) below.
 
-## Paying via MPP (Tempo)
+## Why no API keys?
 
-The same endpoint also accepts **[MPP](https://mpp.dev)** — Tempo's Machine
-Payments Protocol — settled in USDC on **Tempo**. An unpaid request advertises it
-in the `402` via a `WWW-Authenticate: Payment` header (alongside the x402
-challenge); pay with an MPP client and you get `200` plus a `Payment-Receipt`.
+Warpee is account-less — **the payment is the authorization.** It speaks two open
+machine-payment protocols, [x402](https://x402.org) and [MPP](https://mpp.dev), so:
 
-MPP is **client-settles**: your wallet broadcasts the on-chain stablecoin transfer
-and pays the fee in stablecoin — Tempo has no native gas token, so you need USDC
-on Tempo but no separate gas asset.
+- AI agents can pay **per request**
+- No user accounts
+- No API key management
+- Access is authorized by the on-chain payment
+
+The endpoint advertises **both rails in a single `402`**; your client pays with
+whichever it speaks.
+
+## Response
+
+`POST /v1/query` — `Content-Type: application/json`, body `{ "query": "<your question>" }`
+(max 2000 chars). Returns `200`:
+
+```json
+{
+  "answer": "GM Farcaster is a media network whose flagship show ...",
+  "citations": [
+    {
+      "episode": "ep343",
+      "title": "Social Signals and Prediction Markets: GM Farcaster ep343 with Quotient",
+      "display_name": "Friday, February 27, 2026",
+      "url": "https://www.youtube.com/watch?v=xa3oUqZ_4sw&t=3141",
+      "timestamp_seconds": 3141
+    }
+  ],
+  "usage": { "tool_calls": 3 }
+}
+```
+
+- `answer` — a self-contained, source-grounded answer. If the library doesn't
+  cover your question, it says so rather than guessing.
+- `citations` — episodes the answer draws on, with timestamped links. May be
+  empty for questions answered from static facts rather than transcript search.
+- `usage.tool_calls` — how many retrieval/info tools the agent used.
+
+| Status | Meaning |
+|--------|---------|
+| `402` | Payment required — x402 challenge in `PAYMENT-REQUIRED`, MPP challenge in `WWW-Authenticate: Payment`. Pay with whichever you support. |
+| `400` | Missing/empty `query`, or query too long. |
+| `500` | Internal error (generic; no internal detail is ever returned). |
+
+`GET /v1/healthz` → `{ "ok": true, "payments_enabled": true }` — free, no payment.
+
+---
+
+## Payment protocols (the handshake)
+
+Two open, account-less rails are advertised together in one `402`. You only need
+one. Pricing is always authoritative in the live challenge.
+
+<details>
+<summary><b>x402 — USDC on Base</b> (gasless via EIP-3009)</summary>
+
+An unpaid request returns `402` with a base64 `PAYMENT-REQUIRED` challenge (price,
+asset, network, pay-to). Your x402 client signs a USDC transfer authorization and
+retries; a facilitator verifies and settles on-chain; you get `200`. **No gas
+needed** — settlement uses EIP-3009 `transferWithAuthorization`.
+
+The [Quick start](#quick-start-python) above uses this rail. Runnable client:
+[`examples/buyer.py`](examples/buyer.py). Requires `eth-account >= 0.13.5`.
+
+</details>
+
+<details>
+<summary><b>Paying with MPP (Tempo)</b> — USDC on Tempo</summary>
+
+The same endpoint also accepts [MPP](https://mpp.dev) (Tempo's Machine Payments
+Protocol), settled in USDC on **Tempo**. An unpaid request advertises it in the
+`402` via `WWW-Authenticate: Payment`; pay with an MPP client and you get `200`
+plus a `Payment-Receipt`. MPP is **client-settles** — your wallet broadcasts the
+transfer and pays the fee in stablecoin (Tempo has no native gas token), so you
+need USDC on Tempo but no separate gas asset.
 
 ```bash
 pip install "pympp[tempo]"
@@ -113,63 +215,12 @@ async def main():
 asyncio.run(main())
 ```
 
-See [`examples/mpp_buyer.py`](examples/mpp_buyer.py) for a runnable version. The
-response body (`answer` / `citations` / `usage`) is identical on both rails.
+Runnable client: [`examples/mpp_buyer.py`](examples/mpp_buyer.py). The response
+body is identical on both rails.
 
-## Request
+</details>
 
-`POST /v1/query` — `Content-Type: application/json`
-
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| `query` | string | yes | Your question. Max 2000 characters. |
-
-## Response `200`
-
-```json
-{
-  "answer": "GM Farcaster is a media network whose flagship show ...",
-  "citations": [
-    {
-      "episode": "ep343",
-      "title": "Social Signals and Prediction Markets: GM Farcaster ep343 with Quotient",
-      "display_name": "Friday, February 27, 2026",
-      "url": "https://www.youtube.com/watch?v=xa3oUqZ_4sw&t=3141",
-      "timestamp_seconds": 3141
-    }
-  ],
-  "usage": { "tool_calls": 3 }
-}
-```
-
-- `answer` — a self-contained, source-grounded answer. If the library doesn't
-  cover your question, it says so rather than guessing.
-- `citations` — episodes the answer draws on, with timestamped links. May be
-  empty for questions answered from static facts rather than transcript search.
-- `usage.tool_calls` — how many retrieval/info tools the agent used.
-
-## Other responses
-
-| Status | Meaning |
-|--------|---------|
-| `402` | Payment required — x402 challenge in the `PAYMENT-REQUIRED` header (base64 JSON) and an MPP challenge in `WWW-Authenticate: Payment`. Pay with whichever you support. |
-| `400` | Missing/empty `query`, or query too long. |
-| `500` | Internal error (generic; no internal detail is ever returned). |
-
-## Health check (free)
-
-`GET /v1/healthz` → `{ "ok": true, "payments_enabled": true }` — no payment required.
-
-## Notes
-
-- The 402 challenge advertises the live price, asset, network, and pay-to
-  address, so clients always settle against current terms.
-- Pricing may change; tiered pricing may be introduced. The challenge is always
-  authoritative.
-
-See [`examples/buyer.py`](examples/buyer.py) (x402) and
-[`examples/mpp_buyer.py`](examples/mpp_buyer.py) (MPP/Tempo) for runnable clients,
-and [`openapi.yaml`](openapi.yaml) for the machine-readable spec.
+Machine-readable spec: [`openapi.yaml`](openapi.yaml).
 
 ## License
 
