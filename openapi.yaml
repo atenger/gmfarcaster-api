@@ -3,10 +3,15 @@ info:
   title: Warpee Knowledge API
   version: "1.0.0"
   description: >
-    Pay-per-call knowledge retrieval over the GM Farcaster content library.
-    Account-less: the on-chain payment is the authorization. $0.005 USDC per
-    /v1/query call. A single 402 advertises two payment rails — x402 (USDC on
-    Base) and MPP (USDC on Tempo) — and the caller pays with whichever it supports.
+    Pay-per-call knowledge retrieval over the GM Farcaster Network archive —
+    hundreds of podcast episodes, transcripts, and metadata. A single POST
+    /v1/query runs an agent that can search transcripts semantically, summarize
+    episodes, surface featured casts, find mentions of people or projects, and
+    look up episode metadata — returning a grounded answer with timestamped
+    citations (several skills may fire per query). Account-less: the on-chain
+    payment is the authorization, $0.005 USDC per call. A single 402 advertises
+    two payment rails — x402 (USDC on Base) and MPP (USDC on Tempo) — and the
+    caller pays with whichever it supports.
   x-x402:
     scheme: exact
     asset: USDC
@@ -107,7 +112,11 @@ components:
         usage:
           type: object
           properties:
-            tool_calls: { type: integer }
+            tool_calls:
+              type: integer
+              description: >
+                Number of retrieval/info skills the agent invoked to answer.
+                Several may fire per query (e.g. transcript search + featured casts).
     Citation:
       type: object
       properties:
