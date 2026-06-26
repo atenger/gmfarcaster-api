@@ -33,18 +33,49 @@ Ideal for:
 
 ## Ask it anything about the Farcaster ecosystem
 
+**Topics, takes & sentiment** — answered from the transcripts:
+
 ```text
 What have GM Farcaster hosts said about prediction markets?
 What were the biggest takeaways from FarCon?
-Which episodes discussed Clanker?
 How has sentiment toward mini apps evolved?
 When was the Clanker Ecosystem Fund (CEF) first announced?
-Summarize the interviews with Jesse Pollak.
-What did guests say about Base App?
 ```
 
-Every answer comes back grounded in the source episodes, with timestamped links
-that jump straight to the moment in the show.
+**People, mentions & featured casts:**
+
+```text
+Have the hosts mentioned @dwr?
+Has anything from @yourhandle been featured by GM Farcaster?
+Which episodes had Jesse Pollak as a guest?
+```
+
+**Navigate the archive** — summaries, episodes, hosts:
+
+```text
+Summarize the latest episode.
+Which episodes discussed Clanker?
+Who are the hosts of GM Farcaster?
+List the episodes from February 2026.
+```
+
+Every answer comes back grounded in the source, with timestamped links that jump
+straight to the moment in the show.
+
+## One endpoint, many skills
+
+A single `POST /v1/query` runs an agent over the whole GM Farcaster knowledge base.
+Under the hood it can:
+
+- **Search transcripts semantically** — find what was said on any topic, by meaning
+- **Summarize any episode** from its full transcript
+- **Surface featured casts** curated by GM Farcaster
+- **Find mentions** of people, projects, or protocols across the archive
+- **Look up episode metadata** — dates, hosts, series, guests
+- Return **timestamped citations** to the exact source
+
+You don't pick a tool — you ask a question, and the agent chooses the right skills
+(often several) to answer it.
 
 ## What's behind it
 
