@@ -26,10 +26,9 @@ Ideal for:
 
 - AI agents answering Farcaster questions
 - Research assistants
-- Developer tooling
 - Content discovery
-- Governance and protocol research
-- Ecosystem analytics
+- Farcaster research
+- Qualitative analytics
 
 ## Ask it anything about the Farcaster ecosystem
 
@@ -38,8 +37,8 @@ Ideal for:
 ```text
 What have GM Farcaster hosts said about prediction markets?
 What were the biggest takeaways from FarCon?
-How has sentiment toward mini apps evolved?
 When was the Clanker Ecosystem Fund (CEF) first announced?
+What is the background on the infamous mole meme?
 ```
 
 **People, mentions & featured casts:**
