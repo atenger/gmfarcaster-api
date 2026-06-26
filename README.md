@@ -138,6 +138,16 @@ for c in resp.json()["citations"]:
 The wallet needs **USDC on Base, but no ETH** — settlement is gasless for the
 caller. Prefer to pay on **Tempo** instead? See [Payment protocols](#payment-protocols-the-handshake) below.
 
+## Use it from Claude or Cursor (MCP)
+
+Prefer to wire Warpee into an AI client rather than call the HTTP API yourself?
+The [`mcp-server/`](mcp-server/) directory ships an
+[MCP](https://modelcontextprotocol.io) server — connect it **once** and Claude
+Desktop, Claude Code, or Cursor can query the archive on their own via an
+`ask_gmfarcaster` tool. It wraps this same paid endpoint; you bring a Base wallet
+holding a little USDC. Setup and client config in
+[`mcp-server/README.md`](mcp-server/README.md).
+
 ## Why no API keys?
 
 Warpee is account-less — **the payment is the authorization.** It speaks two open
