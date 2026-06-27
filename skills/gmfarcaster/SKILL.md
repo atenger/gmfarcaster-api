@@ -61,7 +61,7 @@ funds, tell the user to set `GMFARCASTER_PRIVATE_KEY` to a wallet holding USDC o
 |----------|----------|---------|-------------|
 | `GMFARCASTER_PRIVATE_KEY` | **Yes** | — | 0x-hex private key of a wallet holding USDC on Base. |
 | `GMFARCASTER_API_URL` | No | `https://api.gmfarcaster.com/v1/query` | Override the endpoint. |
-| `GMFARCASTER_NETWORK` | No | `eip155:8453` | CAIP-2 network id (Base mainnet). Use `eip155:84532` for Base Sepolia testnet. |
+| `GMFARCASTER_NETWORK` | No | `eip155:8453` | CAIP-2 network the payment is signed on. **Must match a network the target API advertises in its 402** — the public API is Base mainnet, so leave this default. Only change it (e.g. `eip155:84532`, Base Sepolia) if you *also* set `GMFARCASTER_API_URL` to a testnet deployment; otherwise the payment won't match and the call fails. |
 
 ## Notes
 
