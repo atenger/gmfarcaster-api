@@ -138,7 +138,7 @@ for c in resp.json()["citations"]:
 The wallet needs **USDC on Base, but no ETH** — settlement is gasless for the
 caller. Prefer to pay on **Tempo** instead? See [Payment protocols](#payment-protocols-the-handshake) below.
 
-## Use it from Claude or Cursor (MCP)
+## Use it from Claude or Cursor (MCP or skill)
 
 Prefer to wire Warpee into an AI client rather than call the HTTP API yourself?
 The [`mcp-server/`](mcp-server/) directory ships an
@@ -147,6 +147,12 @@ Desktop, Claude Code, or Cursor can query the archive on their own via an
 `ask_gmfarcaster` tool. It wraps this same paid endpoint; you bring a Base wallet
 holding a little USDC. Setup and client config in
 [`mcp-server/README.md`](mcp-server/README.md).
+
+There's also a **Claude skill** in [`skills/gmfarcaster/`](skills/gmfarcaster/) — a
+self-contained `SKILL.md` plus a small Python script that pays the x402 toll and
+returns a cited answer. The MCP server is a live tool connection; the skill is a
+runnable script. They're independent on-ramps to the same API — use whichever fits
+your workflow.
 
 ## Why no API keys?
 
