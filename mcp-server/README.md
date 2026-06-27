@@ -73,9 +73,9 @@ Add to `~/.cursor/mcp.json` (or a project `.cursor/mcp.json`):
 
 Once connected, just ask naturally — the client decides when to call the tool:
 
-> *"What have GM Farcaster hosts said about prediction markets?"*
-> *"Summarize the latest episode."*
-> *"Has anything from @dwr been featured on the show?"*
+> *"Use the gmfarcaster tool and tell me what the GM Farcaster hosts have said about prediction markets?"*
+> *"Summarize the latest gmfarcaster episode."*
+> *"Use the gmfarcaster tool and tell me what from @dwr been featured on the show?"*
 
 ## Configuration
 
