@@ -4,3 +4,9 @@ __pycache__/
 .env.*
 .venv/
 venv/
+
+# Claude Code
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.mcp.json
