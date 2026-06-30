@@ -138,4 +138,4 @@ re-asking (each call is a separate on-chain payment).
 
 ## License
 
-[MIT](../LICENSE) © GM Farcaster Network
+[MIT](../../LICENSE) © GM Farcaster Network

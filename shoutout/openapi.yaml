@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: On-Air Shoutout API
+  version: "1.0.0"
+  description: >
+    Pay to have a sponsor message read live on air on the GM Farcaster
+    livestream. A single POST /v1/shoutout submits a sponsor read and returns a
+    receipt — this is an ASYNCHRONOUS, human-in-the-loop service, not an instant
+    answer. The call returns 202 with a request_id and status "pending_review";
+    GM Farcaster retains full editorial control and may approve, air, or decline
+    the request. Declined requests are refunded to the verified on-chain payer
+    (or an optional refund_to_wallet). Poll GET /v1/shoutout/{id} for status.
+    Account-less: the on-chain payment is the authorization, $5 USDC per call. A
+    single 402 advertises two payment rails — x402 (USDC on Base) and MPP (USDC
+    on Tempo) — and the caller pays with whichever it supports.
+
+    This is an experimental media product: the servers block below is the
+    authoritative source of truth for the current endpoint, and pricing is always
+    authoritative in the live 402 challenge.
+  x-x402:
+    scheme: exact
+    asset: USDC
+    network: eip155:8453        # Base mainnet (testnet: eip155:84532)
+    price: "$5"
+  x-mpp:
+    protocol: mpp               # Machine Payments Protocol (https://mpp.dev)
+    method: tempo
+    asset: USDC
+    chainId: 4217               # Tempo mainnet (testnet Moderato: 42431)
+    price: "$5"
+servers:
+  - url: https://gateway.gmfarcaster.com
+paths:
+  /v1/shoutout:
+    post:
+      summary: Submit a sponsor message to be read live on air
+      description: >
+        Submits a sponsor read for review and returns a receipt. Requires
+        payment: an unpaid request returns 402 advertising both rails — an x402
+        challenge in PAYMENT-REQUIRED and an MPP challenge in WWW-Authenticate:
+        Payment. Retry with a signed payment header (x402) or Authorization:
+        Payment (MPP) to receive 202 Accepted with a request_id and status
+        "pending_review". This is asynchronous and human-in-the-loop: GM
+        Farcaster reviews the submission and may approve and air it, or decline
+        and refund it (to the verified on-chain payer, or the optional
+        refund_to_wallet). The read happens later, live on the show. The call
+        returns quickly with a receipt — do NOT auto-retry a successful 202, as
+        each retry is a separate on-chain payment and would charge again. Poll
+        GET /v1/shoutout/{request_id} for status.
+      x-payment-info:
+        scheme: exact
+        asset: USDC
+        network: eip155:8453
+        price: "$5"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShoutoutRequest"
+      responses:
+        "202":
+          description: Shoutout accepted for review (receipt; pending editorial review).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShoutoutAccepted"
+        "402":
+          description: >
+            Payment required. The response advertises both rails; pay with either.
+          headers:
+            PAYMENT-REQUIRED:
+              schema: { type: string }
+              description: Base64-encoded x402 PaymentRequired object (Base USDC).
+            WWW-Authenticate:
+              schema: { type: string }
+              description: 'MPP challenge: `Payment ...` (Tempo USDC).'
+        "400":
+          description: Missing/invalid fields (e.g. empty sponsor_name or read_text, or read_text over 280 chars).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500":
+          description: Internal error (generic; no internal detail returned).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /v1/shoutout/{id}:
+    get:
+      summary: Check the status of a submitted shoutout (free, no payment)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+          description: The request_id returned by POST /v1/shoutout (e.g. "sho_...").
+      responses:
+        "200":
+          description: Current status of the shoutout request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShoutoutStatus"
+        "404":
+          description: No shoutout found for the given id.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /v1/healthz:
+    get:
+      summary: Health check (free, no payment)
+      responses:
+        "200":
+          description: Service healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  payments_enabled: { type: boolean }
+components:
+  schemas:
+    ShoutoutRequest:
+      type: object
+      required: [sponsor_name, read_text]
+      properties:
+        sponsor_name:
+          type: string
+          maxLength: 120
+          description: The name of the sponsor or project to credit on air.
+          examples:
+            - "Acme Frames"
+        read_text:
+          type: string
+          maxLength: 280
+          description: The script read live on air. Keep it tight — read aloud on the show.
+          examples:
+            - "Today's GM is brought to you by Acme Frames — the fastest way to ship a Farcaster mini app. acmeframes.xyz"
+        url:
+          type: string
+          format: uri
+          description: Optional link to include or reference for the sponsor.
+        contact:
+          type: object
+          description: Optional contact details for follow-up about the read.
+          properties:
+            farcaster: { type: string }
+            email: { type: string }
+            x: { type: string }
+        refund_to_wallet:
+          type: string
+          description: >
+            Optional wallet override to receive a refund if the request is
+            declined. Defaults to the verified on-chain payer.
+        notes:
+          type: string
+          description: Optional internal notes for the GM Farcaster team. Never read on air.
+    ShoutoutAccepted:
+      type: object
+      required: [request_id, status, status_url, amount, submitted_at]
+      properties:
+        request_id:
+          type: string
+          description: Unique id for the submission.
+          examples:
+            - "sho_8f3c2a1b9d4e"
+        status:
+          type: string
+          const: pending_review
+          description: Always "pending_review" on acceptance — the read is queued for editorial review.
+        status_url:
+          type: string
+          format: uri
+          description: URL to poll for the current status (GET /v1/shoutout/{request_id}).
+        payer:
+          type: [string, "null"]
+          description: The verified on-chain payer address, if resolved.
+        amount:
+          type: string
+          description: The amount paid (e.g. "$5").
+          examples:
+            - "$5"
+        submitted_at:
+          type: string
+          format: date-time
+          description: When the submission was accepted.
+    ShoutoutStatus:
+      type: object
+      required: [request_id, status, submitted_at]
+      properties:
+        request_id:
+          type: string
+          examples:
+            - "sho_8f3c2a1b9d4e"
+        status:
+          type: string
+          enum: [pending_review, approved, aired, declined, refunded, expired]
+          description: >
+            Lifecycle: pending_review -> approved -> aired (the read happened), or
+            pending_review -> declined -> refunded. expired covers requests that
+            were never aired and timed out.
+        submitted_at:
+          type: string
+          format: date-time
+        reviewed_at:
+          type: [string, "null"]
+          format: date-time
+          description: When the request was reviewed (approved or declined).
+        aired_episode:
+          type: [string, "null"]
+          description: The episode the read aired on, if aired.
+        aired_at:
+          type: [string, "null"]
+          format: date-time
+          description: When the read aired, if aired.
+        refunded_at:
+          type: [string, "null"]
+          format: date-time
+          description: When a refund was issued, if declined.
+    Error:
+      type: object
+      properties:
+        error: { type: string }

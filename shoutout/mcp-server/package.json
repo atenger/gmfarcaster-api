@@ -1,10 +1,10 @@
 {
-  "name": "gmfarcaster-mcp",
+  "name": "gmfarcaster-shoutout-mcp",
   "version": "0.1.0",
-  "description": "MCP server for the Warpee Knowledge API — query the GM Farcaster podcast archive from any MCP client. Pay-per-call via x402 (USDC on Base); no API keys.",
+  "description": "MCP server for the On-Air Shoutout API — pay to have a sponsor message read live on the GM Farcaster show, from any MCP client. Pay-per-call via x402 (USDC on Base); no API keys.",
   "type": "module",
   "bin": {
-    "gmfarcaster-mcp": "build/index.js"
+    "gmfarcaster-shoutout-mcp": "build/index.js"
   },
   "files": [
     "build",
@@ -23,17 +23,17 @@
     "model-context-protocol",
     "farcaster",
     "gm-farcaster",
-    "warpee",
-    "x402",
-    "knowledge-api"
+    "shoutout",
+    "sponsor",
+    "x402"
   ],
   "license": "MIT",
   "author": "GM Farcaster Network",
-  "homepage": "https://github.com/atenger/gmfarcaster-api",
+  "homepage": "https://github.com/atenger/gmfarcaster-api/tree/main/shoutout/mcp-server",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/atenger/gmfarcaster-api.git",
-    "directory": "mcp-server"
+    "directory": "shoutout/mcp-server"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
