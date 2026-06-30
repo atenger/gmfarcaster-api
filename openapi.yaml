@@ -34,7 +34,10 @@ paths:
         unpaid request returns 402 advertising both rails — an x402 challenge in
         PAYMENT-REQUIRED and an MPP challenge in WWW-Authenticate: Payment. Retry
         with a signed payment header (x402) or Authorization: Payment (MPP) to
-        receive 200.
+        receive 200. Answers are live-generated and typically take ~30s (up to ~3
+        minutes), so use a client read timeout of at least 180s and do not
+        auto-retry on timeout — each retry is a separate on-chain payment and can
+        double-charge.
       x-payment-info:
         scheme: exact
         asset: USDC

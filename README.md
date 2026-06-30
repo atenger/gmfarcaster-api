@@ -107,6 +107,19 @@ The API is built on the full GM Farcaster media archive:
 One HTTP request in, a cited answer out. The payment handshake is automatic — an
 x402- or MPP-aware client does it for you (see Quick start).
 
+## What to expect — latency & retries
+
+Answers are **live-generated** by an agent, so they're not instant: expect
+**~30 seconds typically, and up to ~3 minutes** for complex questions.
+
+- **Set a generous read timeout** — the examples below use `timeout=300`.
+- **Do not auto-retry on timeout.** Each attempt is a **separate on-chain
+  payment**, so a client that retries a slow-but-fine request can pay twice and
+  double-charge you. Wait it out instead.
+- **Lowest-friction path:** use the [MCP server](#use-it-from-claude-or-cursor-mcp-or-skill)
+  or [Claude skill](skills/gmfarcaster/) — they already wait long enough and
+  handle the payment for you, so you don't have to tune any of this.
+
 ## Quick start (Python)
 
 ```bash
@@ -128,7 +141,7 @@ session = x402_requests(client)  # a requests.Session that auto-pays 402s
 resp = session.post(
     "https://api.gmfarcaster.com/v1/query",
     json={"query": "What have GM Farcaster hosts said about prediction markets?"},
-    timeout=300,
+    timeout=300,  # answers take ~30s–3min; keep this generous and don't auto-retry (each retry pays again)
 )
 print(resp.json()["answer"])
 for c in resp.json()["citations"]:
@@ -255,7 +268,7 @@ async def main():
         resp = await client.post(
             "https://api.gmfarcaster.com/v1/query",
             json={"query": "What have GM Farcaster hosts said about prediction markets?"},
-            timeout=300,
+            timeout=300,  # answers take ~30s–3min; keep this generous and don't auto-retry (each retry pays again)
         )
     data = resp.json()
     print(data["answer"])
