@@ -100,6 +100,10 @@ server.registerTool(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
+        // Answers are live-generated and can take up to ~3 min; allow a generous
+        // ceiling instead of relying on the runtime's default fetch timeout. We do
+        // not retry on abort — each attempt is a separate on-chain payment.
+        signal: AbortSignal.timeout(300_000),
       });
 
       if (!res.ok) {

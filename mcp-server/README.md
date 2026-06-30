@@ -131,6 +131,11 @@ The server is a thin wrapper over the public HTTP API. The same endpoint also
 accepts **MPP (USDC on Tempo)** for non-MCP callers; see the
 [main README](../README.md). MPP support inside this MCP server is on the roadmap.
 
+Answers are **live-generated**, so a tool call can take **~30 seconds, and up to ~3
+minutes** for complex questions — that's expected, not a hang. The server waits long
+enough and pays only once per call, so let the tool finish rather than cancelling and
+re-asking (each call is a separate on-chain payment).
+
 ## License
 
 [MIT](../LICENSE) © GM Farcaster Network

@@ -55,6 +55,11 @@ The script prints the answer followed by a `Sources:` list. Relay the answer to 
 user and cite the sources. If it prints an error about a missing key or insufficient
 funds, tell the user to set `GMFARCASTER_PRIVATE_KEY` to a wallet holding USDC on Base.
 
+Answers are **live-generated**, so a single query can take **~30 seconds, and up to
+~3 minutes** for complex questions — this is normal, not a hang. The script already
+uses a generous timeout and waits it out, so let it run; don't re-invoke it on a slow
+query, since each call is a separate on-chain payment and would charge again.
+
 ## Configuration
 
 | Variable | Required | Default | Description |
