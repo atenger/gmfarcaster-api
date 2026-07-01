@@ -53,8 +53,8 @@ The script needs two Python packages and a funded wallet key.
 
 ## How to submit a shoutout
 
-Run the bundled script with the sponsor name and the read text. The read text is
-the script read live on air (max 280 chars):
+Run the bundled script with the sponsor name (max 120 chars) and the read text.
+The read text is the script read live on air (max 280 chars):
 
 ```bash
 python "$CLAUDE_SKILL_DIR/request.py" \

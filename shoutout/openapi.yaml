@@ -76,7 +76,7 @@ paths:
               schema: { type: string }
               description: 'MPP challenge: `Payment ...` (Tempo USDC).'
         "400":
-          description: Missing/invalid fields (e.g. empty sponsor_name or read_text, or read_text over 280 chars).
+          description: Missing/invalid fields (e.g. empty sponsor_name or read_text, sponsor_name over 120 chars, or read_text over 280 chars).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -117,8 +117,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  ok: { type: boolean }
-                  payments_enabled: { type: boolean }
+                  status: { type: string, examples: ["ok"] }
+                  timestamp: { type: string, format: date-time }
+                  version: { type: string, examples: ["0.1.0"] }
 components:
   schemas:
     ShoutoutRequest:

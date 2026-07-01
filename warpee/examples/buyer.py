@@ -20,7 +20,7 @@ from x402.mechanisms.evm.exact.client import ExactEvmScheme
 from x402.mechanisms.evm.signers import EthAccountSigner
 from x402.http.clients.requests import x402_requests
 
-NETWORK = os.environ.get("X402_NETWORK", "eip155:84532")  # default: Base Sepolia testnet
+NETWORK = os.environ.get("X402_NETWORK", "eip155:8453")  # default: Base mainnet (live API)
 URL = os.environ.get("X402_URL", "https://api.gmfarcaster.com/v1/query")
 
 key = os.environ.get("X402_PRIVATE_KEY")

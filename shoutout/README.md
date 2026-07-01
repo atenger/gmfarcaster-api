@@ -47,7 +47,7 @@ pending_review ──► declined ──► refunded     (editorial decline, mon
 ## What you submit
 
 `POST /v1/shoutout` — `Content-Type: application/json`. Required: `sponsor_name`
-and `read_text` (the script read live on air, max 280 chars). Optional: `url`,
+(max 120 chars) and `read_text` (the script read live on air, max 280 chars). Optional: `url`,
 `contact` (`{farcaster, email, x}`), `refund_to_wallet`, and `notes` (internal
 only, **never read on air**).
 
@@ -84,11 +84,11 @@ A receipt — `202 Accepted`:
 |--------|---------|
 | `202` | Accepted for review — receipt returned. The read is **not** guaranteed to air; it's pending editorial review. |
 | `402` | Payment required — x402 challenge in `PAYMENT-REQUIRED`, MPP challenge in `WWW-Authenticate: Payment`. Pay with whichever you support. |
-| `400` | Missing/invalid fields (e.g. empty `sponsor_name`/`read_text`, or `read_text` over 280 chars). |
+| `400` | Missing/invalid fields (e.g. empty `sponsor_name`/`read_text`, `sponsor_name` over 120 chars, or `read_text` over 280 chars). |
 | `500` | Internal error (generic; no internal detail is ever returned). |
 
 `GET /v1/shoutout/{id}` → `ShoutoutStatus` — free, no payment. `GET /v1/healthz` →
-`{ "ok": true, "payments_enabled": true }` — free.
+`{ "status": "ok", "timestamp": "...", "version": "..." }` — free.
 
 ## What to expect — the call is fast, the read is not
 
