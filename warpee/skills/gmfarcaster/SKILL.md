@@ -74,3 +74,6 @@ query, since each call is a separate on-chain payment and would charge again.
   MCP server are two independent ways to reach the same API — use whichever fits your
   client. The MCP server is a live tool connection; this skill is a runnable script.
 - Each call spends real USDC. Keep the wallet balance small and top it up as needed.
+- The ~$0.005 figure is the launch price and may change. The API's 402 challenge
+  always advertises the current price and is authoritative; the script pays the
+  advertised amount.
