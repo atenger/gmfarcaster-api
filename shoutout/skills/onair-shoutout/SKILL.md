@@ -108,3 +108,6 @@ payment and would charge $5 again. Use the `--status` mode (free) instead.
   skill is x402-only.
 - Each submission spends real USDC. Keep the wallet balance small and top it up as
   needed. Declined requests are refunded.
+- The $5 figure is the launch price and may change. The API's 402 challenge always
+  advertises the current price and is authoritative; the script pays the advertised
+  amount.
