@@ -105,9 +105,23 @@ async function processSource(source, { check }) {
     return { ok: false };
   }
 
-  const hardErrors = errors.filter((e) => e.severity === 'error');
+  // mppx's validate() rejects x-payment-info objects that carry BOTH the
+  // mpp.dev-documented offers[] array AND flat intent/amount/currency/method
+  // fields ("Cannot mix offers with flat payment info fields"). We emit both
+  // on purpose (see core/openapi_doc.py / discovery.ts) because the flat
+  // shape is what MPPScan's actual crawler (@agentcash/discovery, a
+  // different, undocumented parser) reads -- confirmed live 2026-09-16 when
+  // Warpee registered successfully with both fields present. mppx's rule is
+  // a stricter spec-purity check than any real consumer of this document
+  // enforces, so it's accepted here rather than treated as blocking. Every
+  // OTHER hard error still blocks the sync.
+  const ACCEPTED_ERROR_MESSAGES = ['Cannot mix offers with flat payment info fields'];
+  const allHardErrors = errors.filter((e) => e.severity === 'error');
+  const hardErrors = allHardErrors.filter((e) => !ACCEPTED_ERROR_MESSAGES.includes(e.message));
+  const acceptedErrors = allHardErrors.filter((e) => ACCEPTED_ERROR_MESSAGES.includes(e.message));
   const warnings = errors.filter((e) => e.severity !== 'error');
   for (const w of warnings) console.warn('  validation warning:', w);
+  for (const e of acceptedErrors) console.warn('  validation error ACCEPTED (known mppx/MPPScan conflict):', e.message);
   if (hardErrors.length > 0) {
     console.error(`  VALIDATION FAILED (${hardErrors.length} error(s)) — not writing/checking this file:`);
     for (const e of hardErrors) console.error('   ', JSON.stringify(e));
