@@ -5,6 +5,10 @@ __pycache__/
 .venv/
 venv/
 
+# Root-level Node tooling (scripts/sync-openapi.mjs). Per-API mcp-server/
+# packages have their own nested .gitignore for their own node_modules.
+node_modules/
+
 # Claude Code
 CLAUDE.md
 CLAUDE.local.md

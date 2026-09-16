@@ -1,0 +1,16 @@
+{
+  "name": "gmfarcaster-api-suite",
+  "private": true,
+  "type": "module",
+  "description": "Root-level tooling for the GM Farcaster Network API suite docs repo. Per-API packages (mcp-server/) are independent, per-folder npm packages — this is the only repo-wide package.",
+  "scripts": {
+    "sync:openapi": "node scripts/sync-openapi.mjs",
+    "sync:openapi:check": "node scripts/sync-openapi.mjs --check"
+  },
+  "dependencies": {
+    "mppx": "0.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

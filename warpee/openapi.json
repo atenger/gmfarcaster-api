@@ -1,0 +1,201 @@
+{
+  "info": {
+    "description": "Pay-per-call knowledge retrieval over the GM Farcaster Network archive — hundreds of podcast episodes, transcripts, and metadata. A single POST /v1/query runs an agent that can search transcripts semantically, summarize episodes, surface featured casts, find mentions of people or projects, and look up episode metadata — returning a grounded answer with timestamped citations (several skills may fire per query). Account-less: the on-chain payment is the authorization. A single 402 advertises two payment rails — x402 (USDC on Base) and MPP (USDC on Tempo) — and the caller pays with whichever it supports.",
+    "title": "Warpee Knowledge API",
+    "version": "1.0.0",
+    "x-x402": {
+      "asset": "USDC",
+      "network": "eip155:8453",
+      "price": "$0.005",
+      "scheme": "exact"
+    }
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/healthz": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "payments_enabled": {
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Service healthy."
+          }
+        },
+        "summary": "Health check (free, no payment)"
+      }
+    },
+    "/v1/query": {
+      "post": {
+        "description": "Returns a source-grounded answer with citations. Requires payment: an unpaid request returns 402 advertising both rails — an x402 challenge in PAYMENT-REQUIRED and an MPP challenge in WWW-Authenticate: Payment. Retry with a signed payment header (x402) or Authorization: Payment (MPP) to receive 200. Answers are live-generated and typically take ~30s (up to ~3 minutes), so use a client read timeout of at least 180s. A literal retry of the same signed payment is safe — the server recognizes it and replays the original answer rather than charging twice — but a client that gives up and constructs a NEW payment for the same question will be charged again; avoid that rather than relying on retry logic.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "query": {
+                    "description": "A natural-language question about Farcaster topics, people, or events discussed on GM Farcaster.",
+                    "maxLength": 2000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "answer": {
+                      "type": "string"
+                    },
+                    "citations": {
+                      "items": {
+                        "properties": {
+                          "display_name": {
+                            "type": "string"
+                          },
+                          "episode": {
+                            "type": "string"
+                          },
+                          "timestamp_seconds": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "usage": {
+                      "properties": {
+                        "tool_calls": {
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "answer",
+                    "citations"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Answer with citations."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Missing/empty query, or query too long."
+          },
+          "402": {
+            "description": "Payment required. The response advertises both rails; pay with either.",
+            "headers": {
+              "PAYMENT-REQUIRED": {
+                "description": "Base64-encoded x402 PaymentRequired object (Base USDC).",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "WWW-Authenticate": {
+                "description": "MPP challenge: `Payment ...` (Tempo USDC).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Internal error (generic; no internal detail returned)."
+          }
+        },
+        "summary": "Ask a question over the GM Farcaster library",
+        "x-payment-info": {
+          "offers": [
+            {
+              "amount": "5000",
+              "currency": "0x20C000000000000000000000b9537d11c60E8b50",
+              "description": "Ask a natural-language question and get a cited answer from the GM Farcaster library — hundreds of episodes of Farcaster news, interviews, and analysis. Returns a grounded answer plus the source episodes with timestamped links.",
+              "intent": "charge",
+              "method": "tempo"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.gmfarcaster.com"
+    }
+  ],
+  "x-service-info": {
+    "categories": [
+      "knowledge",
+      "farcaster",
+      "search"
+    ],
+    "docs": {
+      "apiReference": "https://github.com/atenger/gmfarcaster-api/blob/main/warpee/openapi.yaml",
+      "homepage": "https://www.gmfarcaster.com/apis"
+    }
+  },
+  "x-generated": {
+    "note": "Generated by scripts/sync-openapi.mjs from the live service — do not edit directly. Edit the service (gmfc101/core/openapi_doc.py for warpee, gm-farcaster/apps/api/src/lib/discovery.ts for shoutout) and re-run `npm run sync:openapi`.",
+    "source": "https://api.gmfarcaster.com/v1/openapi.json",
+    "syncedAt": "2026-09-16T18:05:41.728Z"
+  }
+}
