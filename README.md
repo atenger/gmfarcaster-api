@@ -49,8 +49,7 @@ You only need **one** rail. There are no accounts or API keys — paying *is* th
 Each folder ships independent, redundant ways to reach the same endpoint — use
 whichever fits your workflow:
 
-- **OpenAPI spec** — `<api>/openapi.yaml` (hand-written) and `<api>/openapi.json`
-  (generated from the live service — see below)
+- **OpenAPI spec** — `<api>/openapi.json` (generated from the live service — see below)
 - **MCP server** — connect once from Claude Desktop / Claude Code / Cursor
   (`gmfarcaster-mcp` for Warpee; `gmfarcaster-shoutout-mcp` for On-Air Shoutout)
 - **Claude skill** — a runnable script Claude invokes
@@ -71,9 +70,9 @@ npm run sync:openapi:check  # fetch + validate + report drift, exit nonzero — 
 Both commands validate each live document against
 [mppx](https://github.com/wevm/mppx)'s own MPP-discovery validator before touching
 anything on disk, so a broken live document is reported, not silently copied.
-`<api>/openapi.yaml` is still hand-written and not covered by this script — see the
-open question in `ROADMAP.local.md` about whether to retire it now that the
-generated `.json` exists.
+`<api>/openapi.yaml` was retired 2026-09-16 — it predated the generated `.json`
+and having two files both claiming to be "the spec" was exactly the drift this
+script exists to eliminate. `<api>/openapi.json` is the only spec now.
 
 ## What's behind it
 

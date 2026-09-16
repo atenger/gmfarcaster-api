@@ -13,8 +13,8 @@
 | **Payment** | x402 (USDC on Base) or MPP (USDC on Tempo) — pay per request, no accounts |
 
 > **Experimental API.** This is a media experiment, and the base URL may evolve.
-> The [`openapi.yaml`](openapi.yaml) `servers` block is the **authoritative source
-> of truth** for the current endpoint, and pricing is always authoritative in the
+> The **live service** (`GET /openapi.json`) is the **authoritative source of
+> truth** for the current endpoint, and pricing is always authoritative in the
 > live `402` challenge. Treat the values in this README as illustrative.
 
 ---
@@ -254,7 +254,8 @@ body is identical on both rails.
 
 </details>
 
-Machine-readable spec: [`openapi.yaml`](openapi.yaml).
+Machine-readable spec: [`openapi.json`](openapi.json) (generated from the live
+service — see the root README's "Keeping the specs in sync").
 
 ## License
 

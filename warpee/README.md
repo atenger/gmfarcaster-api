@@ -283,7 +283,8 @@ body is identical on both rails.
 
 </details>
 
-Machine-readable spec: [`openapi.yaml`](openapi.yaml).
+Machine-readable spec: [`openapi.json`](openapi.json) (generated from the live
+service — see the root README's "Keeping the specs in sync").
 
 ## License
 
