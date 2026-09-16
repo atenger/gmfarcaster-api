@@ -18,23 +18,31 @@ It exposes two tools:
 > `check_shoutout_status`; don't re-call `request_shoutout` to check progress —
 > each call is a separate on-chain payment.
 
-> Submitting a shoutout is a paid, account-less request (**$5 USDC on Base** via
-> [x402](https://x402.org)). There are no API keys — the on-chain payment is the
-> authorization. The server signs with **your own** funded wallet. Settlement is
-> **gasless** for the signer (EIP-3009), so the wallet needs USDC on Base but no ETH.
+> Submitting a shoutout is a paid, account-less request (**$5 USDC**). There are
+> no API keys — the on-chain payment is the authorization. The server signs with
+> **your own** funded wallet, on **whichever rail you configure a key for**:
+> [x402](https://x402.org) (USDC on Base, gasless for the signer via EIP-3009 —
+> wallet needs USDC but no ETH) or [MPP](https://mpp.dev) (USDC on Tempo,
+> client-settles — wallet needs USDC and pays its own small stablecoin-denominated
+> network fee).
 
 ---
 
 ## Prerequisites
 
 - **Node.js ≥ 18**
-- A wallet (private key) holding **USDC on Base**. Use a dedicated, low-balance
-  wallet — see [Security](#security).
+- A wallet (private key) holding **USDC** on **Base** or **Tempo** (whichever
+  rail you want to use). Use a dedicated, low-balance wallet — see
+  [Security](#security).
 
 ## Connect it to your client
 
-The server reads your wallet key from the `GMFARCASTER_PRIVATE_KEY` environment
-variable. Each client configures MCP servers a little differently.
+The server reads your wallet key from `GMFARCASTER_PRIVATE_KEY` (Base, x402) or
+`GMFARCASTER_MPP_PRIVATE_KEY` (Tempo, MPP) — set whichever matches the wallet you
+funded. The examples below use the x402/Base variable; swap in
+`GMFARCASTER_MPP_PRIVATE_KEY` with a Tempo wallet key to use MPP instead — see
+[Configuration](#configuration). Each client configures MCP servers a little
+differently.
 
 ### Claude Desktop
 
@@ -90,17 +98,21 @@ Once connected, just ask naturally — the client decides when to call the tools
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `GMFARCASTER_PRIVATE_KEY` | **Yes** | — | 0x-hex private key of a wallet holding USDC on Base. |
+| `GMFARCASTER_PRIVATE_KEY` | One of these two | — | 0x-hex private key of a wallet holding USDC on Base (x402 rail). |
+| `GMFARCASTER_MPP_PRIVATE_KEY` | One of these two | — | 0x-hex private key of a wallet holding USDC on Tempo (MPP rail). |
+| `GMFARCASTER_PAYMENT_RAIL` | No | `x402` if both keys above are set | `"x402"` or `"mpp"` — which rail to use when you've configured both keys. Ignored (and unnecessary) if only one key is set. |
 | `GMFARCASTER_SHOUTOUT_API_URL` | No | `https://gateway.gmfarcaster.com/v1/shoutout` | Override the endpoint. The free status check derives its origin from this URL. |
-| `GMFARCASTER_NETWORK` | No | `eip155:8453` | CAIP-2 network id (Base mainnet). |
+| `GMFARCASTER_NETWORK` | No | `eip155:8453` | CAIP-2 network id for the x402 rail (Base mainnet). |
 
 ## Security
 
 - The private key signs **real USDC payments**. Treat it like a hot wallet:
   use a **dedicated wallet funded with only a few dollars** of USDC, not your
-  main account.
+  main account. Note the Shoutout price ($5) is much higher than Warpee's —
+  fund accordingly.
 - The key never leaves your machine — it lives in your local MCP client config
-  and is used only to sign the x402 payment for each submission.
+  and is used only to sign the payment for each submission, on whichever rail
+  you've configured.
 - Each shoutout spends $5 USDC. Top the wallet up as needed. (Declined requests
   are refunded to the verified on-chain payer.)
 
@@ -133,7 +145,8 @@ MCP client (Claude / Cursor)
      ▼
 gmfarcaster-shoutout-mcp ──POST /v1/shoutout──► gateway.gmfarcaster.com
      │                                   │ 402 Payment Required
-     │  signs x402 payment (USDC/Base)   ▼
+     │  signs payment (x402/Base or       ▼
+     │  MPP/Tempo — whichever key's set)
      └──────────── retry w/ payment ──► 202 Accepted { request_id, status: pending_review }
 
      │  calls tool check_shoutout_status({ request_id })
@@ -141,10 +154,9 @@ gmfarcaster-shoutout-mcp ──POST /v1/shoutout──► gateway.gmfarcaster.co
 gmfarcaster-shoutout-mcp ──GET /v1/shoutout/{id}──► 200 OK { status, ... }   (free)
 ```
 
-The server is a thin wrapper over the public HTTP API. The same endpoint also
-accepts **MPP (USDC on Tempo)** for non-MCP callers; see the
-[main README](../README.md). MPP support inside this MCP server is on the roadmap —
-for now this server is x402-only.
+The server is a thin wrapper over the public HTTP API, picking whichever rail
+you've configured a key for. See the [main README](../README.md) for the full
+dual-rail contract.
 
 Submitting a shoutout returns **quickly with a receipt** — the read itself airs
 later on the show, after editorial review, and may be declined and refunded. Use

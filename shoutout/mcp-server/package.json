@@ -1,7 +1,7 @@
 {
   "name": "gmfarcaster-shoutout-mcp",
-  "version": "0.1.0",
-  "description": "MCP server for the On-Air Shoutout API — pay to have a sponsor message read live on the GM Farcaster show, from any MCP client. Pay-per-call via x402 (USDC on Base); no API keys.",
+  "version": "0.2.0",
+  "description": "MCP server for the On-Air Shoutout API — pay to have a sponsor message read live on the GM Farcaster show, from any MCP client. Pay-per-call via x402 (USDC on Base) or MPP (USDC on Tempo); no API keys.",
   "type": "module",
   "bin": {
     "gmfarcaster-shoutout-mcp": "build/index.js"
@@ -25,7 +25,9 @@
     "gm-farcaster",
     "shoutout",
     "sponsor",
-    "x402"
+    "x402",
+    "mpp",
+    "tempo"
   ],
   "license": "MIT",
   "author": "GM Farcaster Network",
@@ -39,6 +41,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@x402/evm": "^2.17.0",
     "@x402/fetch": "^2.17.0",
+    "mppx": "0.10.1",
     "viem": "^2.21.0",
     "zod": "^3.25.0 || ^4.0.0"
   },
