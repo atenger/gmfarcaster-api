@@ -3,16 +3,12 @@ info:
   title: On-Air Shoutout API
   version: "1.0.0"
   description: >
-    Pay to have a sponsor message read live on air on the GM Farcaster
-    livestream. A single POST /v1/shoutout submits a sponsor read and returns a
-    receipt — this is an ASYNCHRONOUS, human-in-the-loop service, not an instant
-    answer. The call returns 202 with a request_id and status "pending_review";
-    GM Farcaster retains full editorial control and may approve, air, or decline
-    the request. Declined requests are refunded to the verified on-chain payer
-    (or an optional refund_to_wallet). Poll GET /v1/shoutout/{id} for status.
-    Account-less: the on-chain payment is the authorization, $5 USDC per call. A
-    single 402 advertises two payment rails — x402 (USDC on Base) and MPP (USDC
-    on Tempo) — and the caller pays with whichever it supports.
+    GM Farcaster is a media network covering Farcaster news, interviews, and
+    the broader onchain-social ecosystem. This API books a sponsor message to
+    be read live on air on the GM Farcaster livestream, putting your message
+    in front of its audience. A human reviews every submission before it
+    airs; declined requests are refunded automatically. Pay per call via x402
+    (Base) or MPP (Tempo), whichever your agent speaks.
 
     This is an experimental media product: the servers block below is the
     authoritative source of truth for the current endpoint, and pricing is always
