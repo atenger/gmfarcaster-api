@@ -1,6 +1,6 @@
 {
   "name": "gmfarcaster-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP server for the Warpee Knowledge API — query the GM Farcaster podcast archive from any MCP client. Pay-per-call via x402 (USDC on Base) or MPP (USDC on Tempo); no API keys.",
   "type": "module",
   "bin": {
